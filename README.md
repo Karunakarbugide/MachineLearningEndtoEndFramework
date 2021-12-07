@@ -1,2 +1,2 @@
 # MachineLearningEndtoEndFramework
-An end-to-end machine learning usnig Pydash
+An end-to-end machine learning using Pydash

@@ -1,0 +1,1452 @@
+Index: app.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import dash\r\napp = dash.Dash(__name__, suppress_callback_exceptions=True)\r\nserver = app.server\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app.py b/app.py
+--- a/app.py	(revision 63a6ba4c97247572c60592e1ee715d37a652a246)
++++ b/app.py	(date 1638875459252)
+@@ -1,3 +1,16 @@
+ import dash
++<<<<<<< HEAD
+ app = dash.Dash(__name__, suppress_callback_exceptions=True)
+ server = app.server
++=======
++from dash.dependencies import Input, Output
++from dash import html
++from dash import dcc
++
++external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
++
++app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
++
++if __name__ == '__main__':
++    app.run_server(debug=True)
++>>>>>>> e14922c (Initial commit)
+Index: callbacks.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import plotly.graph_objs as go\r\nimport pandas as pd\r\nimport dash\r\nfrom dash_table.Format import Format, Group, Scheme\r\nimport dash_table.FormatTemplate as FormatTemplate\r\nfrom datetime import datetime as dt\r\nfrom app import app\r\n\r\n####################################################################################################\r\n# 000 - FORMATTING INFO\r\n####################################################################################################\r\n\r\n####################### Corporate css formatting\r\ncorporate_colors = {\r\n    'dark-blue-grey': 'rgb(62, 64, 76)',\r\n    'medium-blue-grey': 'rgb(77, 79, 91)',\r\n    'superdark-green': 'rgb(41, 56, 55)',\r\n    'dark-green': 'rgb(57, 81, 85)',\r\n    'medium-green': 'rgb(93, 113, 120)',\r\n    'light-green': 'rgb(186, 218, 212)',\r\n    'pink-red': 'rgb(255, 101, 131)',\r\n    'dark-pink-red': 'rgb(247, 80, 99)',\r\n    'white': 'rgb(251, 251, 252)',\r\n    'light-grey': 'rgb(208, 206, 206)'\r\n}\r\n\r\nexternalgraph_rowstyling = {\r\n    'margin-left': '15px',\r\n    'margin-right': '15px'\r\n}\r\n\r\nexternalgraph_colstyling = {\r\n    'border-radius': '10px',\r\n    'border-style': 'solid',\r\n    'border-width': '1px',\r\n    'border-color': corporate_colors['superdark-green'],\r\n    'background-color': corporate_colors['superdark-green'],\r\n    'box-shadow': '0px 0px 17px 0px rgba(186, 218, 212, .5)',\r\n    'padding-top': '10px'\r\n}\r\n\r\nfilterdiv_borderstyling = {\r\n    'border-radius': '0px 0px 10px 10px',\r\n    'border-style': 'solid',\r\n    'border-width': '1px',\r\n    'border-color': corporate_colors['light-green'],\r\n    'background-color': corporate_colors['light-green'],\r\n    'box-shadow': '2px 5px 5px 1px rgba(255, 101, 131, .5)'\r\n}\r\n\r\nnavbarcurrentpage = {\r\n    'text-decoration': 'underline',\r\n    'text-decoration-color': corporate_colors['pink-red'],\r\n    'text-shadow': '0px 0px 1px rgb(251, 251, 252)'\r\n}\r\n\r\nrecapdiv = {\r\n    'border-radius': '10px',\r\n    'border-style': 'solid',\r\n    'border-width': '1px',\r\n    'border-color': 'rgb(251, 251, 252, 0.1)',\r\n    'margin-left': '15px',\r\n    'margin-right': '15px',\r\n    'margin-top': '15px',\r\n    'margin-bottom': '15px',\r\n    'padding-top': '5px',\r\n    'padding-bottom': '5px',\r\n    'background-color': 'rgb(251, 251, 252, 0.1)'\r\n}\r\n\r\nrecapdiv_text = {\r\n    'text-align': 'left',\r\n    'font-weight': '350',\r\n    'color': corporate_colors['white'],\r\n    'font-size': '1.5rem',\r\n    'letter-spacing': '0.04em'\r\n}\r\n\r\n####################### Corporate chart formatting\r\n\r\ncorporate_title = {\r\n    'font': {\r\n        'size': 16,\r\n        'color': corporate_colors['white']}\r\n}\r\n\r\ncorporate_xaxis = {\r\n    'showgrid': False,\r\n    'linecolor': corporate_colors['light-grey'],\r\n    'color': corporate_colors['light-grey'],\r\n    'tickangle': 315,\r\n    'titlefont': {\r\n        'size': 12,\r\n        'color': corporate_colors['light-grey']},\r\n    'tickfont': {\r\n        'size': 11,\r\n        'color': corporate_colors['light-grey']},\r\n    'zeroline': False\r\n}\r\n\r\ncorporate_yaxis = {\r\n    'showgrid': True,\r\n    'color': corporate_colors['light-grey'],\r\n    'gridwidth': 0.5,\r\n    'gridcolor': corporate_colors['dark-green'],\r\n    'linecolor': corporate_colors['light-grey'],\r\n    'titlefont': {\r\n        'size': 12,\r\n        'color': corporate_colors['light-grey']},\r\n    'tickfont': {\r\n        'size': 11,\r\n        'color': corporate_colors['light-grey']},\r\n    'zeroline': False\r\n}\r\n\r\ncorporate_font_family = 'Dosis'\r\n\r\ncorporate_legend = {\r\n    'orientation': 'h',\r\n    'yanchor': 'bottom',\r\n    'y': 1.01,\r\n    'xanchor': 'right',\r\n    'x': 1.05,\r\n    'font': {'size': 9, 'color': corporate_colors['light-grey']}\r\n}  # Legend will be on the top right, above the graph, horizontally\r\n\r\ncorporate_margins = {'l': 5, 'r': 5, 't': 45, 'b': 15}  # Set top margin to in case there is a legend\r\n\r\ncorporate_layout = go.Layout(\r\n    font={'family': corporate_font_family},\r\n    title=corporate_title,\r\n    title_x=0.5,  # Align chart title to center\r\n    paper_bgcolor='rgba(0,0,0,0)',\r\n    plot_bgcolor='rgba(0,0,0,0)',\r\n    xaxis=corporate_xaxis,\r\n    yaxis=corporate_yaxis,\r\n    height=270,\r\n    legend=corporate_legend,\r\n    margin=corporate_margins\r\n)\r\n\r\n####################################################################################################\r\n# 000 - DATA MAPPING\r\n####################################################################################################\r\n\r\n# Sales mapping\r\nsales_filepath = 'data/datasource.xlsx'\r\n\r\nsales_fields = {\r\n    'date': 'Date',\r\n    'reporting_group_l1': 'Country',\r\n    'reporting_group_l2': 'City',\r\n    'sales': 'Sales Units',\r\n    'revenues': 'Revenues',\r\n    'sales target': 'Sales Targets',\r\n    'rev target': 'Rev Targets',\r\n    'num clients': 'nClients'\r\n}\r\nsales_formats = {\r\n    sales_fields['date']: '%d/%m/%Y'\r\n}\r\n\r\n####################################################################################################\r\n# 000 - IMPORT DATA\r\n####################################################################################################\r\n\r\n###########################\r\n# Import sales data\r\nxls = pd.ExcelFile(sales_filepath)\r\nsales_import = xls.parse('Static')\r\n\r\n# Format date field\r\nsales_import[sales_fields['date']] = pd.to_datetime(sales_import[sales_fields['date']],\r\n                                                    format=sales_formats[sales_fields['date']])\r\nsales_import['date_2'] = sales_import[sales_fields['date']].dt.date\r\nmin_dt = sales_import['date_2'].min()\r\nmin_dt_str = str(min_dt)\r\nmax_dt = sales_import['date_2'].max()\r\nmax_dt_str = str(max_dt)\r\n\r\n# Create L1 dropdown options\r\nrepo_groups_l1 = sales_import[sales_fields['reporting_group_l1']].unique()\r\nrepo_groups_l1_all_2 = [\r\n    {'label': k, 'value': k} for k in sorted(repo_groups_l1)\r\n]\r\nrepo_groups_l1_all_1 = [{'label': '(Select All)', 'value': 'All'}]\r\nrepo_groups_l1_all = repo_groups_l1_all_1 + repo_groups_l1_all_2\r\n\r\n# Initialise L2 dropdown options\r\nrepo_groups_l2 = sales_import[sales_fields['reporting_group_l2']].unique()\r\nrepo_groups_l2_all_2 = [\r\n    {'label': k, 'value': k} for k in sorted(repo_groups_l2)\r\n]\r\nrepo_groups_l2_all_1 = [{'label': '(Select All)', 'value': 'All'}]\r\nrepo_groups_l2_all = repo_groups_l2_all_1 + repo_groups_l2_all_2\r\nrepo_groups_l1_l2 = {}\r\nfor l1 in repo_groups_l1:\r\n    l2 = sales_import[sales_import[sales_fields['reporting_group_l1']] == l1][\r\n        sales_fields['reporting_group_l2']].unique()\r\n    repo_groups_l1_l2[l1] = l2\r\n\r\n\r\n################################################################################################################################################## SET UP END\r\n\r\n####################################################################################################\r\n# 000 - DEFINE ADDITIONAL FUNCTIONS\r\n####################################################################################################\r\ndef group_wavg(df, gr_by_cols, weight, value):\r\n    \"\"\"This function returns a df grouped by the gr_by_cols and calculate the weighted avg based\r\n    on the entries in the weight and value lists\"\"\"\r\n    # Calculate weight * value columns\r\n    wcols = []\r\n    cols = []\r\n    for i in range(0, len(value), 1):\r\n        wcol = \"w\" + value[i]\r\n        wcols.append(wcol)\r\n        df[wcol] = df[weight[i]] * df[value[i]]\r\n    # Group by summing the wcols and weight columns\r\n    cols = weight\r\n    for i in wcols:\r\n        cols.append(i)\r\n    df1 = df.groupby(gr_by_cols)[cols].agg('sum')\r\n    df1.reset_index(inplace=True)\r\n    # Divide wcols by weight and remove columns\r\n    for i in range(0, len(value), 1):\r\n        df1[value[i]] = df1[wcols[i]] / df1[weight[i]]\r\n        df1.drop(wcols[i], axis='columns', inplace=True)\r\n\r\n    return df1\r\n\r\n\r\ndef colorscale_generator(n, starting_col={'r': 186, 'g': 218, 'b': 212}, finish_col={'r': 57, 'g': 81, 'b': 85}):\r\n    \"\"\"This function generate a colorscale between two given rgb extremes, for an amount of data points\r\n    The rgb should be specified as dictionaries\"\"\"\r\n    r = starting_col['r']\r\n    g = starting_col['g']\r\n    b = starting_col['b']\r\n    rf = finish_col['r']\r\n    gf = finish_col['g']\r\n    bf = finish_col['b']\r\n    ri = (rf - r) / n\r\n    gi = (gf - g) / n\r\n    bi = (bf - b) / n\r\n    color_i = 'rgb(' + str(r) + ',' + str(g) + ',' + str(b) + ')'\r\n    my_colorscale = []\r\n    my_colorscale.append(color_i)\r\n    for i in range(n):\r\n        r = r + ri\r\n        g = g + gi\r\n        b = b + bi\r\n        color = 'rgb(' + str(round(r)) + ',' + str(round(g)) + ',' + str(round(b)) + ')'\r\n        my_colorscale.append(color)\r\n\r\n    return my_colorscale\r\n\r\n\r\n# Create a corporate colorcale\r\ncolors = colorscale_generator(n=11)\r\n\r\ncorporate_colorscale = [\r\n    [0.0, colors[0]],\r\n    [0.1, colors[1]],\r\n    [0.2, colors[2]],\r\n    [0.3, colors[3]],\r\n    [0.4, colors[4]],\r\n    [0.5, colors[5]],\r\n    [0.6, colors[6]],\r\n    [0.7, colors[7]],\r\n    [0.8, colors[8]],\r\n    [0.9, colors[9]],\r\n    [1.0, colors[10]]]\r\n\r\n\r\n####################################################################################################\r\n####################################################################################################\r\n####################################################################################################\r\n# SALES PAGE\r\n####################################################################################################\r\n####################################################################################################\r\n####################################################################################################\r\n\r\n####################################################################################################\r\n# 001 - L2 DYNAMIC DROPDOWN OPTIONS\r\n####################################################################################################\r\n@app.callback(\r\n    dash.dependencies.Output('reporting-groups-l2dropdown-sales', 'options'),\r\n    [dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value')])\r\ndef l2dropdown_options(l1_dropdown_value):\r\n    isselect_all = 'Start'  # Initialize isselect_all\r\n    # Rembember that the dropdown value is a list !\r\n    for i in l1_dropdown_value:\r\n        if i == 'All':\r\n            isselect_all = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all = 'N'\r\n        else:\r\n            pass\r\n    # Create options for individual selections\r\n    if isselect_all == 'N':\r\n        options_0 = []\r\n        for i in l1_dropdown_value:\r\n            options_0.append(repo_groups_l1_l2[i])\r\n        options_1 = []  # Extract string of string\r\n        for i1 in options_0:\r\n            for i2 in i1:\r\n                options_1.append(i2)\r\n        options_list = []  # Get unique values from the string\r\n        for i in options_1:\r\n            if i not in options_list:\r\n                options_list.append(i)\r\n            else:\r\n                pass\r\n        options_final_1 = [\r\n            {'label': k, 'value': k} for k in sorted(options_list)]\r\n        options_final_0 = [{'label': '(Select All)', 'value': 'All'}]\r\n        options_final = options_final_0 + options_final_1\r\n    # Create options for select all or none\r\n    else:\r\n        options_final_1 = [\r\n            {'label': k, 'value': k} for k in sorted(repo_groups_l2)]\r\n        options_final_0 = [{'label': '(Select All)', 'value': 'All'}]\r\n        options_final = options_final_0 + options_final_1\r\n\r\n    return options_final\r\n\r\n\r\n####################################################################################################\r\n# 002 - RECAP TABLE\r\n####################################################################################################\r\n@app.callback(\r\n    [dash.dependencies.Output('recap-table', 'data'), dash.dependencies.Output('recap-table', 'columns'),\r\n     dash.dependencies.Output('recap-table', 'style_data_conditional')],\r\n    [dash.dependencies.Input('date-picker-sales', 'start_date'),\r\n     dash.dependencies.Input('date-picker-sales', 'end_date'),\r\n     dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),\r\n     dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])\r\ndef update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):\r\n    start = dt.strptime(start_date, '%Y-%m-%d')\r\n    end = dt.strptime(end_date, '%Y-%m-%d')\r\n\r\n    # Filter based on the dropdowns\r\n    isselect_all_l1 = 'Start'  # Initialize isselect_all\r\n    isselect_all_l2 = 'Start'  # Initialize isselect_all\r\n    ## L1 selection (dropdown value is a list!)\r\n    for i in reporting_l1_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l1 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l1 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l1 == 'N':\r\n        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),\r\n                     :].copy()\r\n    else:\r\n        sales_df_1 = sales_import.copy()\r\n    ## L2 selection (dropdown value is a list!)\r\n    for i in reporting_l2_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l2 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l2 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l2 == 'N':\r\n        sales_df = sales_df_1.loc[sales_df_1[sales_fields['reporting_group_l2']].isin(reporting_l2_dropdown), :].copy()\r\n    else:\r\n        sales_df = sales_df_1.copy()\r\n    del sales_df_1\r\n\r\n    # Filter based on the date filters\r\n    df_1 = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()\r\n    del sales_df\r\n\r\n    # Aggregate df\r\n    metrics = ['Sales (M u)', 'Revenues (M €)', 'Customers (M)']\r\n    result = [df_1[sales_fields['sales']].sum() / 1000000, df_1[sales_fields['revenues']].sum() / 1000000,\r\n              df_1[sales_fields['num clients']].sum() / 1000000]\r\n    target = [df_1[sales_fields['sales target']].sum() / 1000000, df_1[sales_fields['rev target']].sum() / 1000000, '']\r\n    performance = [df_1[sales_fields['sales']].sum() / df_1[sales_fields['sales target']].sum(),\r\n                   df_1[sales_fields['revenues']].sum() / df_1[sales_fields['rev target']].sum(), '']\r\n    df = pd.DataFrame({'KPI': metrics, 'Result': result, 'Target': target, 'Target_Percent': performance})\r\n\r\n    # Configure table data\r\n    data = df.to_dict('records')\r\n    columns = [\r\n        {'id': 'KPI', 'name': 'KPI'},\r\n        {'id': 'Result', 'name': 'Result', 'type': 'numeric',\r\n         'format': Format(scheme=Scheme.fixed, precision=2, group=Group.yes, group_delimiter=',',\r\n                          decimal_delimiter='.')},\r\n        {'id': 'Target', 'name': 'Target', 'type': 'numeric',\r\n         'format': Format(scheme=Scheme.fixed, precision=2, group=Group.yes, group_delimiter=',',\r\n                          decimal_delimiter='.')},\r\n        {'id': 'Target_Percent', 'name': '% Target', 'type': 'numeric', 'format': FormatTemplate.percentage(2)}\r\n    ]\r\n\r\n    # Configure conditional formatting\r\n    conditional_style = [\r\n        {'if': {\r\n            'filter_query': '{Result} >= {Target} && {Target} > 0',\r\n            'column_id': 'Target_Percent'},\r\n            'backgroundColor': corporate_colors['light-green'],\r\n            'color': corporate_colors['dark-green'],\r\n            'fontWeight': 'bold'\r\n        },\r\n        {'if': {\r\n            'filter_query': '{Result} < {Target} && {Target} > 0',\r\n            'column_id': 'Target_Percent'},\r\n            'backgroundColor': corporate_colors['pink-red'],\r\n            'color': corporate_colors['dark-green'],\r\n            'fontWeight': 'bold'\r\n        },\r\n    ]\r\n\r\n    return data, columns, conditional_style\r\n\r\n\r\n####################################################################################################\r\n# 003 - SALES COUNT DAY\r\n####################################################################################################\r\n@app.callback(\r\n    dash.dependencies.Output('sales-count-day', 'figure'),\r\n    [dash.dependencies.Input('date-picker-sales', 'start_date'),\r\n     dash.dependencies.Input('date-picker-sales', 'end_date'),\r\n     dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),\r\n     dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])\r\ndef update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):\r\n    start = dt.strptime(start_date, '%Y-%m-%d')\r\n    end = dt.strptime(end_date, '%Y-%m-%d')\r\n\r\n    # Filter based on the dropdowns\r\n    isselect_all_l1 = 'Start'  # Initialize isselect_all\r\n    isselect_all_l2 = 'Start'  # Initialize isselect_all\r\n    ## L1 selection (dropdown value is a list!)\r\n    for i in reporting_l1_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l1 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l1 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l1 == 'N':\r\n        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),\r\n                     :].copy()\r\n    else:\r\n        sales_df_1 = sales_import.copy()\r\n    ## L2 selection (dropdown value is a list!)\r\n    for i in reporting_l2_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l2 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l2 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l2 == 'N':\r\n        sales_df = sales_df_1.loc[sales_df_1[sales_fields['reporting_group_l2']].isin(reporting_l2_dropdown), :].copy()\r\n    else:\r\n        sales_df = sales_df_1.copy()\r\n    del sales_df_1\r\n\r\n    # Aggregate df\r\n    val_cols = [sales_fields['sales'], sales_fields['sales target']]\r\n    sales_df = sales_df.groupby(sales_fields['date'])[val_cols].agg('sum')\r\n    sales_df.reset_index(inplace=True)\r\n\r\n    # Filter based on the date filters\r\n    df = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()\r\n    del sales_df\r\n\r\n    # Build graph\r\n    hovertemplate_xy = (\r\n            \"<i>Day</i>: %{x|%a, %d-%b-%Y}<br>\" +\r\n            \"<i>Sales</i>: %{y:,d}\" +\r\n            \"<extra></extra>\")  # Remove trace info\r\n    data = go.Scatter(\r\n        x=df[sales_fields['date']],\r\n        y=df[sales_fields['sales']],\r\n        line={'color': corporate_colors['light-green'], 'width': 0.5},\r\n        hovertemplate=hovertemplate_xy)\r\n    fig = go.Figure(data=data, layout=corporate_layout)\r\n    fig.update_layout(\r\n        title={'text': \"Sales per Day\"},\r\n        xaxis={\r\n            'title': \"Day\",\r\n            'tickformat': \"%d-%m-%y\"},\r\n        yaxis={\r\n            'title': \"Sales (units)\",\r\n            'range': [0, 100000]},\r\n        showlegend=False)\r\n\r\n    return fig\r\n\r\n\r\n####################################################################################################\r\n# 004 - SALES COUNT MONTH\r\n####################################################################################################\r\n@app.callback(\r\n    dash.dependencies.Output('sales-count-month', 'figure'),\r\n    [dash.dependencies.Input('date-picker-sales', 'start_date'),\r\n     dash.dependencies.Input('date-picker-sales', 'end_date'),\r\n     dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),\r\n     dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])\r\ndef update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):\r\n    start = dt.strptime(start_date, '%Y-%m-%d')\r\n    end = dt.strptime(end_date, '%Y-%m-%d')\r\n\r\n    # Filter based on the dropdowns\r\n    isselect_all_l1 = 'Start'  # Initialize isselect_all\r\n    isselect_all_l2 = 'Start'  # Initialize isselect_all\r\n    ## L1 selection (dropdown value is a list!)\r\n    for i in reporting_l1_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l1 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l1 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l1 == 'N':\r\n        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),\r\n                     :].copy()\r\n    else:\r\n        sales_df_1 = sales_import.copy()\r\n    ## L2 selection (dropdown value is a list!)\r\n    for i in reporting_l2_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l2 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l2 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l2 == 'N':\r\n        sales_df = sales_df_1.loc[sales_df_1[sales_fields['reporting_group_l2']].isin(reporting_l2_dropdown), :].copy()\r\n    else:\r\n        sales_df = sales_df_1.copy()\r\n    del sales_df_1\r\n\r\n    # Filter based on the date filters\r\n    df1 = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()\r\n    df1['month'] = df1[sales_fields['date']].dt.month\r\n    del sales_df\r\n\r\n    # Aggregate df\r\n    val_cols = [sales_fields['sales'], sales_fields['sales target']]\r\n    df = df1.groupby('month')[val_cols].agg('sum')\r\n    df.reset_index(inplace=True)\r\n    del df1\r\n\r\n    # Build graph\r\n    hovertemplate_xy = (\r\n            \"<i>Month</i>: %{x}<br>\" +\r\n            \"<i>Sales</i>: %{y:,d}\" +\r\n            \"<extra></extra>\")  # Remove trace info\r\n    data = go.Bar(\r\n        x=df['month'],\r\n        y=df[sales_fields['sales']],\r\n        marker={'color': corporate_colors['light-green'], 'opacity': 0.75},\r\n        hovertemplate=hovertemplate_xy)\r\n    fig = go.Figure(data=data, layout=corporate_layout)\r\n\r\n    # Add target% as line on secondary axis\r\n    hovertemplate_xy2 = (\r\n            \"<i>Month</i>: %{x}<br>\" +\r\n            \"<i>Target percentage</i>: %{y:%}\" +\r\n            \"<extra></extra>\")  # Remove trace info\r\n    fig.add_trace(\r\n        go.Scatter(\r\n            x=df['month'],\r\n            y=df[sales_fields['sales']] / df[sales_fields['sales target']],\r\n            line={'color': corporate_colors['pink-red'], 'width': 2},\r\n            yaxis=\"y2\",\r\n            opacity=0.75,\r\n            hovertemplate=hovertemplate_xy2)\r\n    )\r\n    fig.update_layout(\r\n        title={'text': \"Sales per Month vs Target\"},\r\n        xaxis={\r\n            'title': \"Month\",\r\n            'tickvals': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],  # Display x values with different labels\r\n            'ticktext': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']},\r\n        yaxis={'title': \"Sales (units)\"},\r\n        showlegend=False)\r\n    fig.update_layout(yaxis2=corporate_yaxis)\r\n    fig.update_layout(\r\n        yaxis2={\r\n            'title': \"% over Sales target\",\r\n            'side': \"right\",\r\n            'showgrid': False,\r\n            'tickformat': \".0%\",\r\n            'range': [0, 1.15],\r\n            'overlaying': \"y\",\r\n            'linewidth': 1},\r\n        hovermode='x')\r\n\r\n    return fig\r\n\r\n\r\n####################################################################################################\r\n# 005 - WEEKLY-WEEKDAY SALES HEATMAP\r\n####################################################################################################\r\n@app.callback(\r\n    dash.dependencies.Output('sales-weekly-heatmap', 'figure'),\r\n    [dash.dependencies.Input('date-picker-sales', 'start_date'),\r\n     dash.dependencies.Input('date-picker-sales', 'end_date'),\r\n     dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),\r\n     dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])\r\ndef update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):\r\n    start = dt.strptime(start_date, '%Y-%m-%d')\r\n    end = dt.strptime(end_date, '%Y-%m-%d')\r\n\r\n    # Filter based on the dropdowns\r\n    isselect_all_l1 = 'Start'  # Initialize isselect_all\r\n    isselect_all_l2 = 'Start'  # Initialize isselect_all\r\n    ## L1 selection (dropdown value is a list!)\r\n    for i in reporting_l1_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l1 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l1 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l1 == 'N':\r\n        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),\r\n                     :].copy()\r\n    else:\r\n        sales_df_1 = sales_import.copy()\r\n    ## L2 selection (dropdown value is a list!)\r\n    for i in reporting_l2_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l2 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l2 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l2 == 'N':\r\n        sales_df = sales_df_1.loc[sales_df_1[sales_fields['reporting_group_l2']].isin(reporting_l2_dropdown), :].copy()\r\n    else:\r\n        sales_df = sales_df_1.copy()\r\n    del sales_df_1\r\n\r\n    # Filter based on the date filters\r\n    df1 = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()\r\n    df1['week'] = df1[sales_fields['date']].dt.strftime(\"%V\")\r\n    df1['weekday'] = df1[sales_fields['date']].dt.weekday\r\n    del sales_df\r\n\r\n    # Aggregate df\r\n    val_cols = [sales_fields['sales']]\r\n    df = df1.groupby(['week', 'weekday'])[val_cols].agg('sum')\r\n    df.reset_index(inplace=True)\r\n    del df1\r\n\r\n    # Build graph\r\n    hovertemplate_here = (\r\n            \"<i>Week</i>: %{x}<br>\" +\r\n            \"<i>Weekday</i>: %{y}<br>\" +\r\n            \"<i>Sales</i>: %{z}\" +\r\n            \"<extra></extra>\")  # Remove trace info\r\n    data = go.Heatmap(\r\n        x=df['weekday'],\r\n        y=df['week'],\r\n        z=df[sales_fields['sales']],\r\n        hovertemplate=hovertemplate_here,\r\n        hoverongaps=False,\r\n        colorscale=corporate_colorscale,\r\n        showscale=False,\r\n        xgap=1,\r\n        ygap=1)\r\n    fig = go.Figure(data=data, layout=corporate_layout)\r\n    fig.update_layout(\r\n        title={'text': \"Heatmap: Sales by week and weekeday\"},\r\n        xaxis={\r\n            'title': \"Weekday\",\r\n            'tickvals': [0, 1, 2, 3, 4, 5, 6],  # Display x values with different labels\r\n            'ticktext': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']},\r\n        yaxis={\r\n            'title': \"Calendar Week\",\r\n            'showgrid': False})\r\n\r\n    return fig\r\n\r\n\r\n####################################################################################################\r\n# 006 - SALES BY COUNTRY\r\n####################################################################################################\r\n@app.callback(\r\n    dash.dependencies.Output('sales-count-country', 'figure'),\r\n    [dash.dependencies.Input('date-picker-sales', 'start_date'),\r\n     dash.dependencies.Input('date-picker-sales', 'end_date'),\r\n     dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),\r\n     dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])\r\ndef update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):\r\n    start = dt.strptime(start_date, '%Y-%m-%d')\r\n    end = dt.strptime(end_date, '%Y-%m-%d')\r\n\r\n    # Filter based on the dropdowns\r\n    isselect_all_l1 = 'Start'  # Initialize isselect_all\r\n    isselect_all_l2 = 'Start'  # Initialize isselect_all\r\n    ## L1 selection (dropdown value is a list!)\r\n    for i in reporting_l1_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l1 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l1 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l1 == 'N':\r\n        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),\r\n                     :].copy()\r\n    else:\r\n        sales_df_1 = sales_import.copy()\r\n    ## L2 selection (dropdown value is a list!)\r\n    for i in reporting_l2_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l2 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l2 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l2 == 'N':\r\n        sales_df = sales_df_1.loc[sales_df_1[sales_fields['reporting_group_l2']].isin(reporting_l2_dropdown), :].copy()\r\n    else:\r\n        sales_df = sales_df_1.copy()\r\n    del sales_df_1\r\n\r\n    # Filter based on the date filters\r\n    df1 = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()\r\n    del sales_df\r\n\r\n    # Aggregate df\r\n    val_cols = [sales_fields['sales']]\r\n    df = df1.groupby(sales_fields['reporting_group_l1'])[val_cols].agg('sum')\r\n    df.reset_index(inplace=True)\r\n    df.sort_values(sales_fields['reporting_group_l1'], axis=0, ascending=True, inplace=True, na_position='last')\r\n    del df1\r\n\r\n    # Prepare incr % data\r\n    hover_text = []\r\n    sale_perc = []\r\n    sale_base = [0]\r\n    sale_b = 0\r\n    sales_tot = df[sales_fields['sales']].sum()\r\n    for index, row in df.iterrows():\r\n        sale_p = row[sales_fields['sales']] / sales_tot\r\n        hover_text.append((\"<i>Country</i>: {}<br>\" +\r\n                           \"<i>Sales</i>: {:.2%}\" +\r\n                           \"<extra></extra>\").format(row[sales_fields['reporting_group_l1']],\r\n                                                     sale_p))\r\n        sale_b = sale_b + sale_p\r\n        sale_perc.append(sale_p)\r\n        sale_base.append(sale_b)\r\n    sale_base = sale_base[:-1]\r\n    df['sale_p'] = sale_perc\r\n    df['hovertext'] = hover_text\r\n\r\n    # Build graph\r\n    data = go.Bar(\r\n        x=df[sales_fields['reporting_group_l1']],\r\n        y=df['sale_p'],\r\n        base=sale_base,\r\n        marker={'color': corporate_colors['light-green'],\r\n                'opacity': 0.75},\r\n        hovertemplate=df['hovertext'])\r\n    fig = go.Figure(data=data, layout=corporate_layout)\r\n    fig.update_layout(\r\n        title={'text': \"Sales Percentage by Country\"},\r\n        xaxis={'title': \"Country\", 'tickangle': 0},\r\n        yaxis={\r\n            'title': \"Sales Percentage\",\r\n            'tickformat': \".0%\",\r\n            'range': [0, 1]},\r\n        barmode='group',\r\n        showlegend=False)\r\n\r\n    return fig\r\n\r\n\r\n####################################################################################################\r\n# 007 - SALES BUBBLE CHART\r\n####################################################################################################\r\n@app.callback(\r\n    dash.dependencies.Output('sales-bubble-county', 'figure'),\r\n    [dash.dependencies.Input('date-picker-sales', 'start_date'),\r\n     dash.dependencies.Input('date-picker-sales', 'end_date'),\r\n     dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),\r\n     dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])\r\ndef update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):\r\n    start = dt.strptime(start_date, '%Y-%m-%d')\r\n    end = dt.strptime(end_date, '%Y-%m-%d')\r\n\r\n    # Filter based on the dropdowns\r\n    isselect_all_l1 = 'Start'  # Initialize isselect_all\r\n    isselect_all_l2 = 'Start'  # Initialize isselect_all\r\n    ## L1 selection (dropdown value is a list!)\r\n    for i in reporting_l1_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l1 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l1 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l1 == 'N':\r\n        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),\r\n                     :].copy()\r\n    else:\r\n        sales_df_1 = sales_import.copy()\r\n    ## L2 selection (dropdown value is a list!)\r\n    for i in reporting_l2_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l2 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l2 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l2 == 'N':\r\n        sales_df = sales_df_1.loc[sales_df_1[sales_fields['reporting_group_l2']].isin(reporting_l2_dropdown), :].copy()\r\n    else:\r\n        sales_df = sales_df_1.copy()\r\n    del sales_df_1\r\n\r\n    # Filter based on the date filters\r\n    df1 = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()\r\n    del sales_df\r\n\r\n    # Aggregate df\r\n    val_cols = [sales_fields['sales'], sales_fields['num clients'], sales_fields['revenues']]\r\n    df = df1.groupby(sales_fields['reporting_group_l1'])[val_cols].agg('sum')\r\n    df.reset_index(inplace=True)\r\n    df['rev_per_cl'] = df[sales_fields['revenues']] / df[sales_fields['num clients']]\r\n    del df1\r\n\r\n    # Build graph\r\n    # Add hover text info on the df\r\n    hover_text = []\r\n    for index, row in df.iterrows():\r\n        hover_text.append(('<i>Country</i>: {}<br>' +\r\n                           '<i>Sales</i>: {:,d}<br>' +\r\n                           '<i>Clients</i>: {:,d}<br>' +\r\n                           '<i>Revenues</i>: {:,d}' +\r\n                           '<extra></extra>').format(row[sales_fields['reporting_group_l1']],\r\n                                                     row[sales_fields['sales']],\r\n                                                     row[sales_fields['num clients']],\r\n                                                     row[sales_fields['revenues']]))\r\n    df['hovertext'] = hover_text\r\n    sizeref = 2. * max(df[sales_fields['sales']]) / (100 ** 2)\r\n\r\n    # Create bubbles (1 color per country, one trace per city)\r\n    country_names = sorted(df[sales_fields['reporting_group_l1']].unique())\r\n    countries = len(country_names)\r\n    colorscale = colorscale_generator(n=countries, starting_col={'r': 57, 'g': 81, 'b': 85},\r\n                                      finish_col={'r': 251, 'g': 251, 'b': 252})\r\n\r\n    fig = go.Figure(layout=corporate_layout)\r\n    i = 0\r\n    for co in country_names:\r\n        color = colorscale[i]\r\n        i = i + 1\r\n        df_i = df.loc[df[sales_fields['reporting_group_l1']] == co, :].copy()\r\n        fig.add_trace(\r\n            go.Scatter(\r\n                x=df_i['rev_per_cl'],\r\n                y=df_i[sales_fields['num clients']],\r\n                name=co,\r\n                hovertemplate=df_i['hovertext'],\r\n                marker_size=df_i[sales_fields['sales']],\r\n                marker={\r\n                    'color': color,\r\n                    'line_width': 1,\r\n                    'line': {'color': corporate_colors['light-grey']}\r\n                })\r\n        )\r\n\r\n    fig.update_traces(mode='markers', marker={'sizemode': 'area', 'sizeref': sizeref})\r\n    corporate_margins_here = corporate_margins\r\n    corporate_margins_here['t'] = 65\r\n    fig.update_layout(\r\n        title={'text': \"Revenue per Client by Country\"},\r\n        xaxis={'title': \"Revenue per Client\", 'tickangle': 0},\r\n        yaxis={'title': \"Sales (Units)\"},\r\n        margin=corporate_margins_here)\r\n\r\n    return fig\r\n\r\n\r\n####################################################################################################\r\n# 008 - SALES BY COUNTRY & CITY\r\n####################################################################################################\r\n@app.callback(\r\n    dash.dependencies.Output('sales-count-city', 'figure'),\r\n    [dash.dependencies.Input('date-picker-sales', 'start_date'),\r\n     dash.dependencies.Input('date-picker-sales', 'end_date'),\r\n     dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),\r\n     dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])\r\ndef update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):\r\n    start = dt.strptime(start_date, '%Y-%m-%d')\r\n    end = dt.strptime(end_date, '%Y-%m-%d')\r\n\r\n    # Filter based on the dropdowns\r\n    isselect_all_l1 = 'Start'  # Initialize isselect_all\r\n    isselect_all_l2 = 'Start'  # Initialize isselect_all\r\n    ## L1 selection (dropdown value is a list!)\r\n    for i in reporting_l1_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l1 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l1 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l1 == 'N':\r\n        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),\r\n                     :].copy()\r\n    else:\r\n        sales_df_1 = sales_import.copy()\r\n    ## L2 selection (dropdown value is a list!)\r\n    for i in reporting_l2_dropdown:\r\n        if i == 'All':\r\n            isselect_all_l2 = 'Y'\r\n            break\r\n        elif i != '':\r\n            isselect_all_l2 = 'N'\r\n        else:\r\n            pass\r\n    # Filter df according to selection\r\n    if isselect_all_l2 == 'N':\r\n        sales_df = sales_df_1.loc[sales_df_1[sales_fields['reporting_group_l2']].isin(reporting_l2_dropdown), :].copy()\r\n    else:\r\n        sales_df = sales_df_1.copy()\r\n    del sales_df_1\r\n\r\n    # Filter based on the date filters\r\n    df1 = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()\r\n    del sales_df\r\n\r\n    # Aggregate df\r\n    val_cols = [sales_fields['sales'], sales_fields['sales target']]\r\n    df = df1.groupby([sales_fields['reporting_group_l1'], sales_fields['reporting_group_l2']])[val_cols].agg('sum')\r\n    df.reset_index(inplace=True)\r\n    # Include hover data\r\n    hover_text = []\r\n    for index, row in df.iterrows():\r\n        hover_text.append((\"<i>Country</i>: {}<br>\" +\r\n                           \"<i>City</i>: {}<br>\" +\r\n                           \"<i>Sales</i>: {:,d}<br>\" +\r\n                           \"<i>Targets</i>: {:,d}\" +\r\n                           \"<extra></extra>\").format(row[sales_fields['reporting_group_l1']],\r\n                                                     row[sales_fields['reporting_group_l2']],\r\n                                                     row[sales_fields['sales']],\r\n                                                     row[sales_fields['sales target']]))\r\n    df['hovertext'] = hover_text\r\n    df['l1l2'] = df[sales_fields['reporting_group_l1']] + \"_\" + df[sales_fields['reporting_group_l2']]\r\n    # Generate colors\r\n    ncolors = len(df[sales_fields['reporting_group_l2']].unique())\r\n    colorscale = colorscale_generator(n=ncolors)\r\n\r\n    # Build graph\r\n    data = []\r\n    i = 0\r\n    for l in sorted(df['l1l2']):\r\n        df_l = df.loc[(df['l1l2'] == l), :].copy()\r\n        trace = go.Bar(\r\n            name=l,\r\n            x=df_l[sales_fields['reporting_group_l1']],\r\n            y=df_l[sales_fields['sales']],\r\n            hovertemplate=df_l['hovertext'],\r\n            marker={\r\n                'color': colorscale[i],\r\n                'opacity': 0.85,\r\n                'line_width': 1,\r\n                'line': {'color': colorscale[i]}\r\n            }\r\n        )\r\n        i = i + 1\r\n        data.append(trace)\r\n    fig = go.Figure(data=data, layout=corporate_layout)\r\n    fig.update_layout(\r\n        barmode='stack',\r\n        title={'text': \"Sales by Country & City\"},\r\n        xaxis={'title': \"Country\", 'tickangle': 0},\r\n        yaxis={'title': \"Sales (Units)\"},\r\n        showlegend=False)\r\n\r\n    return fig\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/callbacks.py b/callbacks.py
+--- a/callbacks.py	(revision 63a6ba4c97247572c60592e1ee715d37a652a246)
++++ b/callbacks.py	(date 1638875459248)
+@@ -1,8 +1,19 @@
++<<<<<<< HEAD
+ import plotly.graph_objs as go
+ import pandas as pd
+ import dash
+ from dash_table.Format import Format, Group, Scheme
+ import dash_table.FormatTemplate as FormatTemplate
++=======
++from dash import dcc
++from dash import html
++import plotly.graph_objs as go
++import pandas as pd
++import numpy as np
++import dash
++from dash import dash_table
++from dash_table.Format import Format, Group
++>>>>>>> e14922c (Initial commit)
+ from datetime import datetime as dt
+ from app import app
+ 
+@@ -12,6 +23,7 @@
+ 
+ ####################### Corporate css formatting
+ corporate_colors = {
++<<<<<<< HEAD
+     'dark-blue-grey': 'rgb(62, 64, 76)',
+     'medium-blue-grey': 'rgb(77, 79, 91)',
+     'superdark-green': 'rgb(41, 56, 55)',
+@@ -75,10 +87,76 @@
+     'font-size': '1.5rem',
+     'letter-spacing': '0.04em'
+ }
++=======
++    'dark-blue-grey' : 'rgb(62, 64, 76)',
++    'medium-blue-grey' : 'rgb(77, 79, 91)',
++    'superdark-green' : 'rgb(41, 56, 55)',
++    'dark-green' : 'rgb(57, 81, 85)',
++    'medium-green' : 'rgb(93, 113, 120)',
++    'light-green' : 'rgb(186, 218, 212)',
++    'pink-red' : 'rgb(255, 101, 131)',
++    'dark-pink-red' : 'rgb(247, 80, 99)',
++    'white' : 'rgb(251, 251, 252)',
++    'light-grey' : 'rgb(208, 206, 206)'
++}
++
++externalgraph_rowstyling = {
++    'margin-left' : '15px',
++    'margin-right' : '15px'
++}
++
++externalgraph_colstyling = {
++    'border-radius' : '10px',
++    'border-style' : 'solid',
++    'border-width' : '1px',
++    'border-color' : corporate_colors['superdark-green'],
++    'background-color' : corporate_colors['superdark-green'],
++    'box-shadow' : '0px 0px 17px 0px rgba(186, 218, 212, .5)',
++    'padding-top' : '10px'
++}
++
++filterdiv_borderstyling = {
++    'border-radius' : '0px 0px 10px 10px',
++    'border-style' : 'solid',
++    'border-width' : '1px',
++    'border-color' : corporate_colors['light-green'],
++    'background-color' : corporate_colors['light-green'],
++    'box-shadow' : '2px 5px 5px 1px rgba(255, 101, 131, .5)'
++    }
++
++navbarcurrentpage = {
++    'text-decoration' : 'underline',
++    'text-decoration-color' : corporate_colors['pink-red'],
++    'text-shadow': '0px 0px 1px rgb(251, 251, 252)'
++    }
++
++recapdiv = {
++    'border-radius' : '10px',
++    'border-style' : 'solid',
++    'border-width' : '1px',
++    'border-color' : 'rgb(251, 251, 252, 0.1)',
++    'margin-left' : '15px',
++    'margin-right' : '15px',
++    'margin-top' : '15px',
++    'margin-bottom' : '15px',
++    'padding-top' : '5px',
++    'padding-bottom' : '5px',
++    'background-color' : 'rgb(251, 251, 252, 0.1)'
++    }
++
++recapdiv_text = {
++    'text-align' : 'left',
++    'font-weight' : '350',
++    'color' : corporate_colors['white'],
++    'font-size' : '1.5rem',
++    'letter-spacing' : '0.04em'
++    }
++>>>>>>> e14922c (Initial commit)
+ 
+ ####################### Corporate chart formatting
+ 
+ corporate_title = {
++<<<<<<< HEAD
+     'font': {
+         'size': 16,
+         'color': corporate_colors['white']}
+@@ -95,10 +173,29 @@
+     'tickfont': {
+         'size': 11,
+         'color': corporate_colors['light-grey']},
++=======
++    'font' : {
++        'size' : 16,
++        'color' : corporate_colors['white']}
++}
++
++corporate_xaxis = {
++    'showgrid' : False,
++    'linecolor' : corporate_colors['light-grey'],
++    'color' : corporate_colors['light-grey'],
++    'tickangle' : 315,
++    'titlefont' : {
++        'size' : 12,
++        'color' : corporate_colors['light-grey']},
++    'tickfont' : {
++        'size' : 11,
++        'color' : corporate_colors['light-grey']},
++>>>>>>> e14922c (Initial commit)
+     'zeroline': False
+ }
+ 
+ corporate_yaxis = {
++<<<<<<< HEAD
+     'showgrid': True,
+     'color': corporate_colors['light-grey'],
+     'gridwidth': 0.5,
+@@ -110,12 +207,26 @@
+     'tickfont': {
+         'size': 11,
+         'color': corporate_colors['light-grey']},
++=======
++    'showgrid' : True,
++    'color' : corporate_colors['light-grey'],
++    'gridwidth' : 0.5,
++    'gridcolor' : corporate_colors['dark-green'],
++    'linecolor' : corporate_colors['light-grey'],
++    'titlefont' : {
++        'size' : 12,
++        'color' : corporate_colors['light-grey']},
++    'tickfont' : {
++        'size' : 11,
++        'color' : corporate_colors['light-grey']},
++>>>>>>> e14922c (Initial commit)
+     'zeroline': False
+ }
+ 
+ corporate_font_family = 'Dosis'
+ 
+ corporate_legend = {
++<<<<<<< HEAD
+     'orientation': 'h',
+     'yanchor': 'bottom',
+     'y': 1.01,
+@@ -138,11 +249,36 @@
+     legend=corporate_legend,
+     margin=corporate_margins
+ )
++=======
++    'orientation' : 'h',
++    'yanchor' : 'bottom',
++    'y' : 1.01,
++    'xanchor' : 'right',
++    'x' : 1.05,
++	'font' : {'size' : 9, 'color' : corporate_colors['light-grey']}
++} # Legend will be on the top right, above the graph, horizontally
++
++corporate_margins = {'l' : 5, 'r' : 5, 't' : 45, 'b' : 15}  # Set top margin to in case there is a legend
++
++corporate_layout = go.Layout(
++    font = {'family' : corporate_font_family},
++    title = corporate_title,
++    title_x = 0.5, # Align chart title to center
++    paper_bgcolor = 'rgba(0,0,0,0)',
++    plot_bgcolor = 'rgba(0,0,0,0)',
++    xaxis = corporate_xaxis,
++    yaxis = corporate_yaxis,
++    height = 270,
++    legend = corporate_legend,
++    margin = corporate_margins
++    )
++>>>>>>> e14922c (Initial commit)
+ 
+ ####################################################################################################
+ # 000 - DATA MAPPING
+ ####################################################################################################
+ 
++<<<<<<< HEAD
+ # Sales mapping
+ sales_filepath = 'data/datasource.xlsx'
+ 
+@@ -158,6 +294,23 @@
+ }
+ sales_formats = {
+     sales_fields['date']: '%d/%m/%Y'
++=======
++#Sales mapping
++sales_filepath = 'data/datasource.xlsx'
++
++sales_fields = {
++    'date' : 'Date',
++    'reporting_group_l1' : 'Country',
++    'reporting_group_l2' : 'City',
++    'sales' : 'Sales Units',
++    'revenues' : 'Revenues',
++    'sales target' : 'Sales Targets',
++    'rev target' : 'Rev Targets',
++    'num clients' : 'nClients'
++    }
++sales_formats = {
++    sales_fields['date'] : '%d/%m/%Y'
++>>>>>>> e14922c (Initial commit)
+ }
+ 
+ ####################################################################################################
+@@ -165,6 +318,7 @@
+ ####################################################################################################
+ 
+ ###########################
++<<<<<<< HEAD
+ # Import sales data
+ xls = pd.ExcelFile(sales_filepath)
+ sales_import = xls.parse('Static')
+@@ -172,12 +326,21 @@
+ # Format date field
+ sales_import[sales_fields['date']] = pd.to_datetime(sales_import[sales_fields['date']],
+                                                     format=sales_formats[sales_fields['date']])
++=======
++#Import sales data
++xls = pd.ExcelFile(sales_filepath)
++sales_import=xls.parse('Static')
++
++#Format date field
++sales_import[sales_fields['date']] = pd.to_datetime(sales_import[sales_fields['date']], format=sales_formats[sales_fields['date']])
++>>>>>>> e14922c (Initial commit)
+ sales_import['date_2'] = sales_import[sales_fields['date']].dt.date
+ min_dt = sales_import['date_2'].min()
+ min_dt_str = str(min_dt)
+ max_dt = sales_import['date_2'].max()
+ max_dt_str = str(max_dt)
+ 
++<<<<<<< HEAD
+ # Create L1 dropdown options
+ repo_groups_l1 = sales_import[sales_fields['reporting_group_l1']].unique()
+ repo_groups_l1_all_2 = [
+@@ -200,6 +363,28 @@
+     repo_groups_l1_l2[l1] = l2
+ 
+ 
++=======
++#Create L1 dropdown options
++repo_groups_l1 = sales_import[sales_fields['reporting_group_l1']].unique()
++repo_groups_l1_all_2 = [
++    {'label' : k, 'value' : k} for k in sorted(repo_groups_l1)
++    ]
++repo_groups_l1_all_1 = [{'label' : '(Select All)', 'value' : 'All'}]
++repo_groups_l1_all = repo_groups_l1_all_1 + repo_groups_l1_all_2
++
++#Initialise L2 dropdown options
++repo_groups_l2 = sales_import[sales_fields['reporting_group_l2']].unique()
++repo_groups_l2_all_2 = [
++    {'label' : k, 'value' : k} for k in sorted(repo_groups_l2)
++    ]
++repo_groups_l2_all_1 = [{'label' : '(Select All)', 'value' : 'All'}]
++repo_groups_l2_all = repo_groups_l2_all_1 + repo_groups_l2_all_2
++repo_groups_l1_l2 = {}
++for l1 in repo_groups_l1:
++    l2 = sales_import[sales_import[sales_fields['reporting_group_l1']] == l1][sales_fields['reporting_group_l2']].unique()
++    repo_groups_l1_l2[l1] = l2
++
++>>>>>>> e14922c (Initial commit)
+ ################################################################################################################################################## SET UP END
+ 
+ ####################################################################################################
+@@ -211,8 +396,13 @@
+     # Calculate weight * value columns
+     wcols = []
+     cols = []
++<<<<<<< HEAD
+     for i in range(0, len(value), 1):
+         wcol = "w" + value[i]
++=======
++    for i in range(0,len(value),1):
++        wcol = "w"+value[i]
++>>>>>>> e14922c (Initial commit)
+         wcols.append(wcol)
+         df[wcol] = df[weight[i]] * df[value[i]]
+     # Group by summing the wcols and weight columns
+@@ -222,14 +412,22 @@
+     df1 = df.groupby(gr_by_cols)[cols].agg('sum')
+     df1.reset_index(inplace=True)
+     # Divide wcols by weight and remove columns
++<<<<<<< HEAD
+     for i in range(0, len(value), 1):
++=======
++    for i in range(0,len(value),1):
++>>>>>>> e14922c (Initial commit)
+         df1[value[i]] = df1[wcols[i]] / df1[weight[i]]
+         df1.drop(wcols[i], axis='columns', inplace=True)
+ 
+     return df1
+ 
++<<<<<<< HEAD
+ 
+ def colorscale_generator(n, starting_col={'r': 186, 'g': 218, 'b': 212}, finish_col={'r': 57, 'g': 81, 'b': 85}):
++=======
++def colorscale_generator(n, starting_col = {'r' : 186, 'g' : 218, 'b' : 212}, finish_col = {'r' : 57, 'g' : 81, 'b' : 85}):
++>>>>>>> e14922c (Initial commit)
+     """This function generate a colorscale between two given rgb extremes, for an amount of data points
+     The rgb should be specified as dictionaries"""
+     r = starting_col['r']
+@@ -241,19 +439,30 @@
+     ri = (rf - r) / n
+     gi = (gf - g) / n
+     bi = (bf - b) / n
++<<<<<<< HEAD
+     color_i = 'rgb(' + str(r) + ',' + str(g) + ',' + str(b) + ')'
++=======
++    color_i = 'rgb(' + str(r) +','+ str(g) +',' + str(b) + ')'
++>>>>>>> e14922c (Initial commit)
+     my_colorscale = []
+     my_colorscale.append(color_i)
+     for i in range(n):
+         r = r + ri
+         g = g + gi
+         b = b + bi
++<<<<<<< HEAD
+         color = 'rgb(' + str(round(r)) + ',' + str(round(g)) + ',' + str(round(b)) + ')'
++=======
++        color = 'rgb(' + str(round(r)) +','+ str(round(g)) +',' + str(round(b)) + ')'
++>>>>>>> e14922c (Initial commit)
+         my_colorscale.append(color)
+ 
+     return my_colorscale
+ 
++<<<<<<< HEAD
+ 
++=======
++>>>>>>> e14922c (Initial commit)
+ # Create a corporate colorcale
+ colors = colorscale_generator(n=11)
+ 
+@@ -270,7 +479,10 @@
+     [0.9, colors[9]],
+     [1.0, colors[10]]]
+ 
++<<<<<<< HEAD
+ 
++=======
++>>>>>>> e14922c (Initial commit)
+ ####################################################################################################
+ ####################################################################################################
+ ####################################################################################################
+@@ -286,8 +498,13 @@
+     dash.dependencies.Output('reporting-groups-l2dropdown-sales', 'options'),
+     [dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value')])
+ def l2dropdown_options(l1_dropdown_value):
++<<<<<<< HEAD
+     isselect_all = 'Start'  # Initialize isselect_all
+     # Rembember that the dropdown value is a list !
++=======
++    isselect_all = 'Start' #Initialize isselect_all
++    #Rembember that the dropdown value is a list !
++>>>>>>> e14922c (Initial commit)
+     for i in l1_dropdown_value:
+         if i == 'All':
+             isselect_all = 'Y'
+@@ -296,43 +513,75 @@
+             isselect_all = 'N'
+         else:
+             pass
++<<<<<<< HEAD
+     # Create options for individual selections
++=======
++    #Create options for individual selections
++>>>>>>> e14922c (Initial commit)
+     if isselect_all == 'N':
+         options_0 = []
+         for i in l1_dropdown_value:
+             options_0.append(repo_groups_l1_l2[i])
++<<<<<<< HEAD
+         options_1 = []  # Extract string of string
+         for i1 in options_0:
+             for i2 in i1:
+                 options_1.append(i2)
+         options_list = []  # Get unique values from the string
++=======
++        options_1 = [] # Extract string of string
++        for i1 in options_0:
++            for i2 in i1:
++                options_1.append(i2)
++        options_list = [] # Get unique values from the string
++>>>>>>> e14922c (Initial commit)
+         for i in options_1:
+             if i not in options_list:
+                 options_list.append(i)
+             else:
+                 pass
+         options_final_1 = [
++<<<<<<< HEAD
+             {'label': k, 'value': k} for k in sorted(options_list)]
+         options_final_0 = [{'label': '(Select All)', 'value': 'All'}]
++        options_final = options_final_0 + options_final_1
++    # Create options for select all or none
++    else:
++        options_final_1 = [
++            {'label': k, 'value': k} for k in sorted(repo_groups_l2)]
++        options_final_0 = [{'label': '(Select All)', 'value': 'All'}]
++=======
++            {'label' : k, 'value' : k} for k in sorted(options_list)]
++        options_final_0 = [{'label' : '(Select All)', 'value' : 'All'}]
+         options_final = options_final_0 + options_final_1
+-    # Create options for select all or none
++    #Create options for select all or none
+     else:
+         options_final_1 = [
+-            {'label': k, 'value': k} for k in sorted(repo_groups_l2)]
+-        options_final_0 = [{'label': '(Select All)', 'value': 'All'}]
++            {'label' : k, 'value' : k} for k in sorted(repo_groups_l2)]
++        options_final_0 = [{'label' : '(Select All)', 'value' : 'All'}]
++>>>>>>> e14922c (Initial commit)
+         options_final = options_final_0 + options_final_1
+ 
+     return options_final
+ 
++<<<<<<< HEAD
+ 
++=======
++>>>>>>> e14922c (Initial commit)
+ ####################################################################################################
+ # 002 - RECAP TABLE
+ ####################################################################################################
+ @app.callback(
++<<<<<<< HEAD
+     [dash.dependencies.Output('recap-table', 'data'), dash.dependencies.Output('recap-table', 'columns'),
+      dash.dependencies.Output('recap-table', 'style_data_conditional')],
+     [dash.dependencies.Input('date-picker-sales', 'start_date'),
+      dash.dependencies.Input('date-picker-sales', 'end_date'),
++=======
++    [dash.dependencies.Output('recap-table', 'data'), dash.dependencies.Output('recap-table', 'columns'), dash.dependencies.Output('recap-table', 'style_data_conditional')],
++	[dash.dependencies.Input('date-picker-sales', 'start_date'),
++	 dash.dependencies.Input('date-picker-sales', 'end_date'),
++>>>>>>> e14922c (Initial commit)
+      dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),
+      dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])
+ def update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):
+@@ -340,8 +589,13 @@
+     end = dt.strptime(end_date, '%Y-%m-%d')
+ 
+     # Filter based on the dropdowns
++<<<<<<< HEAD
+     isselect_all_l1 = 'Start'  # Initialize isselect_all
+     isselect_all_l2 = 'Start'  # Initialize isselect_all
++=======
++    isselect_all_l1 = 'Start' #Initialize isselect_all
++    isselect_all_l2 = 'Start' #Initialize isselect_all
++>>>>>>> e14922c (Initial commit)
+     ## L1 selection (dropdown value is a list!)
+     for i in reporting_l1_dropdown:
+         if i == 'All':
+@@ -353,8 +607,12 @@
+             pass
+     # Filter df according to selection
+     if isselect_all_l1 == 'N':
++<<<<<<< HEAD
+         sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),
+                      :].copy()
++=======
++        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown), : ].copy()
++>>>>>>> e14922c (Initial commit)
+     else:
+         sales_df_1 = sales_import.copy()
+     ## L2 selection (dropdown value is a list!)
+@@ -374,6 +632,7 @@
+     del sales_df_1
+ 
+     # Filter based on the date filters
++<<<<<<< HEAD
+     df_1 = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()
+     del sales_df
+ 
+@@ -385,10 +644,22 @@
+     performance = [df_1[sales_fields['sales']].sum() / df_1[sales_fields['sales target']].sum(),
+                    df_1[sales_fields['revenues']].sum() / df_1[sales_fields['rev target']].sum(), '']
+     df = pd.DataFrame({'KPI': metrics, 'Result': result, 'Target': target, 'Target_Percent': performance})
++=======
++    df_1 = sales_df.loc[(sales_df[sales_fields['date']]>=start) & (sales_df[sales_fields['date']]<=end), :].copy()
++    del sales_df
++
++    # Aggregate df
++    metrics = ['Sales (M u)','Revenues (M €)','Customers (M)']
++    result = [df_1[sales_fields['sales']].sum()/1000000, df_1[sales_fields['revenues']].sum()/1000000, df_1[sales_fields['num clients']].sum()/1000000]
++    target = [df_1[sales_fields['sales target']].sum()/1000000, df_1[sales_fields['rev target']].sum()/1000000, '']
++    performance = [df_1[sales_fields['sales']].sum()/df_1[sales_fields['sales target']].sum(), df_1[sales_fields['revenues']].sum()/df_1[sales_fields['rev target']].sum(), '']
++    df = pd.DataFrame({'KPI' : metrics, 'Result' : result, 'Target': target, 'Target_Percent' : performance})
++>>>>>>> e14922c (Initial commit)
+ 
+     # Configure table data
+     data = df.to_dict('records')
+     columns = [
++<<<<<<< HEAD
+         {'id': 'KPI', 'name': 'KPI'},
+         {'id': 'Result', 'name': 'Result', 'type': 'numeric',
+          'format': Format(scheme=Scheme.fixed, precision=2, group=Group.yes, group_delimiter=',',
+@@ -414,19 +685,50 @@
+             'backgroundColor': corporate_colors['pink-red'],
+             'color': corporate_colors['dark-green'],
+             'fontWeight': 'bold'
++=======
++        {'id' : 'KPI', 'name' : 'KPI'},
++        {'id' : 'Result', 'name' : 'Result', 'type' : 'numeric', 'format' : Format(scheme=Scheme.fixed, precision=2, group=Group.yes, group_delimiter=',', decimal_delimiter='.')},
++        {'id' : 'Target', 'name' : 'Target',  'type' : 'numeric', 'format' : Format(scheme=Scheme.fixed, precision=2, group=Group.yes, group_delimiter=',', decimal_delimiter='.')},
++        {'id' : 'Target_Percent', 'name' : '% Target', 'type': 'numeric', 'format' : FormatTemplate.percentage(2)}
++    ]
++
++    # Configure conditional formatting
++    conditional_style=[
++        {'if' : {
++            'filter_query' : '{Result} >= {Target} && {Target} > 0',
++            'column_id' : 'Target_Percent'},
++        'backgroundColor' : corporate_colors['light-green'],
++        'color' : corporate_colors['dark-green'],
++        'fontWeight' : 'bold'
++        },
++        {'if' : {
++            'filter_query' : '{Result} < {Target} && {Target} > 0',
++            'column_id' : 'Target_Percent'},
++        'backgroundColor' : corporate_colors['pink-red'],
++        'color' : corporate_colors['dark-green'],
++        'fontWeight' : 'bold'
++>>>>>>> e14922c (Initial commit)
+         },
+     ]
+ 
+     return data, columns, conditional_style
+ 
++<<<<<<< HEAD
+ 
++=======
++>>>>>>> e14922c (Initial commit)
+ ####################################################################################################
+ # 003 - SALES COUNT DAY
+ ####################################################################################################
+ @app.callback(
+     dash.dependencies.Output('sales-count-day', 'figure'),
++<<<<<<< HEAD
+     [dash.dependencies.Input('date-picker-sales', 'start_date'),
+      dash.dependencies.Input('date-picker-sales', 'end_date'),
++=======
++	[dash.dependencies.Input('date-picker-sales', 'start_date'),
++	 dash.dependencies.Input('date-picker-sales', 'end_date'),
++>>>>>>> e14922c (Initial commit)
+      dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),
+      dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])
+ def update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):
+@@ -434,8 +736,13 @@
+     end = dt.strptime(end_date, '%Y-%m-%d')
+ 
+     # Filter based on the dropdowns
++<<<<<<< HEAD
+     isselect_all_l1 = 'Start'  # Initialize isselect_all
+     isselect_all_l2 = 'Start'  # Initialize isselect_all
++=======
++    isselect_all_l1 = 'Start' #Initialize isselect_all
++    isselect_all_l2 = 'Start' #Initialize isselect_all
++>>>>>>> e14922c (Initial commit)
+     ## L1 selection (dropdown value is a list!)
+     for i in reporting_l1_dropdown:
+         if i == 'All':
+@@ -447,8 +754,12 @@
+             pass
+     # Filter df according to selection
+     if isselect_all_l1 == 'N':
++<<<<<<< HEAD
+         sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),
+                      :].copy()
++=======
++        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown), : ].copy()
++>>>>>>> e14922c (Initial commit)
+     else:
+         sales_df_1 = sales_import.copy()
+     ## L2 selection (dropdown value is a list!)
+@@ -467,46 +778,84 @@
+         sales_df = sales_df_1.copy()
+     del sales_df_1
+ 
++<<<<<<< HEAD
+     # Aggregate df
+     val_cols = [sales_fields['sales'], sales_fields['sales target']]
++=======
++    #Aggregate df
++    val_cols = [sales_fields['sales'],sales_fields['sales target']]
++>>>>>>> e14922c (Initial commit)
+     sales_df = sales_df.groupby(sales_fields['date'])[val_cols].agg('sum')
+     sales_df.reset_index(inplace=True)
+ 
+     # Filter based on the date filters
++<<<<<<< HEAD
+     df = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()
++=======
++    df = sales_df.loc[(sales_df[sales_fields['date']]>=start) & (sales_df[sales_fields['date']]<=end), :].copy()
++>>>>>>> e14922c (Initial commit)
+     del sales_df
+ 
+     # Build graph
+     hovertemplate_xy = (
++<<<<<<< HEAD
+             "<i>Day</i>: %{x|%a, %d-%b-%Y}<br>" +
+             "<i>Sales</i>: %{y:,d}" +
+             "<extra></extra>")  # Remove trace info
++    data = go.Scatter(
++        x=df[sales_fields['date']],
++        y=df[sales_fields['sales']],
++        line={'color': corporate_colors['light-green'], 'width': 0.5},
++        hovertemplate=hovertemplate_xy)
++    fig = go.Figure(data=data, layout=corporate_layout)
++    fig.update_layout(
++        title={'text': "Sales per Day"},
++        xaxis={
++            'title': "Day",
++            'tickformat': "%d-%m-%y"},
++        yaxis={
++            'title': "Sales (units)",
++            'range': [0, 100000]},
++        showlegend=False)
++
++    return fig
++
++
++=======
++    "<i>Day</i>: %{x|%a, %d-%b-%Y}<br>"+
++    "<i>Sales</i>: %{y:,d}"+
++    "<extra></extra>") # Remove trace info
+     data = go.Scatter(
+-        x=df[sales_fields['date']],
+-        y=df[sales_fields['sales']],
+-        line={'color': corporate_colors['light-green'], 'width': 0.5},
+-        hovertemplate=hovertemplate_xy)
++        x = df[sales_fields['date']],
++        y = df[sales_fields['sales']],
++        line = {'color' : corporate_colors['light-green'], 'width' : 0.5},
++        hovertemplate = hovertemplate_xy)
+     fig = go.Figure(data=data, layout=corporate_layout)
+     fig.update_layout(
+-        title={'text': "Sales per Day"},
+-        xaxis={
+-            'title': "Day",
+-            'tickformat': "%d-%m-%y"},
+-        yaxis={
+-            'title': "Sales (units)",
+-            'range': [0, 100000]},
+-        showlegend=False)
++        title={'text' : "Sales per Day"},
++        xaxis = {
++            'title' : "Day",
++            'tickformat' : "%d-%m-%y"},
++        yaxis = {
++            'title' : "Sales (units)",
++            'range' : [0, 100000]},
++        showlegend = False)
+ 
+     return fig
+ 
+-
++>>>>>>> e14922c (Initial commit)
+ ####################################################################################################
+ # 004 - SALES COUNT MONTH
+ ####################################################################################################
+ @app.callback(
+     dash.dependencies.Output('sales-count-month', 'figure'),
++<<<<<<< HEAD
+     [dash.dependencies.Input('date-picker-sales', 'start_date'),
+      dash.dependencies.Input('date-picker-sales', 'end_date'),
++=======
++	[dash.dependencies.Input('date-picker-sales', 'start_date'),
++	 dash.dependencies.Input('date-picker-sales', 'end_date'),
++>>>>>>> e14922c (Initial commit)
+      dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),
+      dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])
+ def update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):
+@@ -514,8 +863,13 @@
+     end = dt.strptime(end_date, '%Y-%m-%d')
+ 
+     # Filter based on the dropdowns
++<<<<<<< HEAD
+     isselect_all_l1 = 'Start'  # Initialize isselect_all
+     isselect_all_l2 = 'Start'  # Initialize isselect_all
++=======
++    isselect_all_l1 = 'Start' #Initialize isselect_all
++    isselect_all_l2 = 'Start' #Initialize isselect_all
++>>>>>>> e14922c (Initial commit)
+     ## L1 selection (dropdown value is a list!)
+     for i in reporting_l1_dropdown:
+         if i == 'All':
+@@ -527,8 +881,12 @@
+             pass
+     # Filter df according to selection
+     if isselect_all_l1 == 'N':
++<<<<<<< HEAD
+         sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),
+                      :].copy()
++=======
++        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown), : ].copy()
++>>>>>>> e14922c (Initial commit)
+     else:
+         sales_df_1 = sales_import.copy()
+     ## L2 selection (dropdown value is a list!)
+@@ -548,11 +906,19 @@
+     del sales_df_1
+ 
+     # Filter based on the date filters
++<<<<<<< HEAD
+     df1 = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()
+     df1['month'] = df1[sales_fields['date']].dt.month
+     del sales_df
+ 
+     # Aggregate df
++=======
++    df1 = sales_df.loc[(sales_df[sales_fields['date']]>=start) & (sales_df[sales_fields['date']]<=end), :].copy()
++    df1['month'] = df1[sales_fields['date']].dt.month
++    del sales_df
++
++    #Aggregate df
++>>>>>>> e14922c (Initial commit)
+     val_cols = [sales_fields['sales'], sales_fields['sales target']]
+     df = df1.groupby('month')[val_cols].agg('sum')
+     df.reset_index(inplace=True)
+@@ -560,18 +926,30 @@
+ 
+     # Build graph
+     hovertemplate_xy = (
++<<<<<<< HEAD
+             "<i>Month</i>: %{x}<br>" +
+             "<i>Sales</i>: %{y:,d}" +
+             "<extra></extra>")  # Remove trace info
++    data = go.Bar(
++        x=df['month'],
++        y=df[sales_fields['sales']],
++        marker={'color': corporate_colors['light-green'], 'opacity': 0.75},
++        hovertemplate=hovertemplate_xy)
++=======
++    "<i>Month</i>: %{x}<br>"+
++    "<i>Sales</i>: %{y:,d}"+
++    "<extra></extra>") # Remove trace info
+     data = go.Bar(
+-        x=df['month'],
+-        y=df[sales_fields['sales']],
+-        marker={'color': corporate_colors['light-green'], 'opacity': 0.75},
+-        hovertemplate=hovertemplate_xy)
++        x = df['month'],
++        y = df[sales_fields['sales']],
++        marker = {'color' : corporate_colors['light-green'], 'opacity' : 0.75},
++        hovertemplate = hovertemplate_xy)
++>>>>>>> e14922c (Initial commit)
+     fig = go.Figure(data=data, layout=corporate_layout)
+ 
+     # Add target% as line on secondary axis
+     hovertemplate_xy2 = (
++<<<<<<< HEAD
+             "<i>Month</i>: %{x}<br>" +
+             "<i>Target percentage</i>: %{y:%}" +
+             "<extra></extra>")  # Remove trace info
+@@ -607,13 +985,54 @@
+     return fig
+ 
+ 
++=======
++    "<i>Month</i>: %{x}<br>"+
++    "<i>Target percentage</i>: %{y:%}"+
++    "<extra></extra>") # Remove trace info
++    fig.add_trace(
++        go.Scatter(
++            x = df['month'],
++            y = df[sales_fields['sales']]/df[sales_fields['sales target']],
++            line = {'color': corporate_colors['pink-red'], 'width' : 2},
++            yaxis = "y2",
++            opacity = 0.75,
++            hovertemplate = hovertemplate_xy2)
++    )
++    fig.update_layout(
++        title={'text' : "Sales per Month vs Target"},
++        xaxis = {
++            'title' : "Month",
++            'tickvals' : [1,2,3,4,5,6,7,8,9,10,11,12], #Display x values with different labels
++            'ticktext' : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']},
++        yaxis = {'title' : "Sales (units)"},
++        showlegend = False)
++    fig.update_layout(yaxis2 = corporate_yaxis)
++    fig.update_layout(
++        yaxis2 = {
++            'title' : "% over Sales target",
++            'side' : "right",
++            'showgrid' : False,
++            'tickformat' : ".0%",
++            'range' : [0, 1.15],
++            'overlaying' : "y",
++            'linewidth' : 1},
++        hovermode = 'x')
++
++    return fig
++
++>>>>>>> e14922c (Initial commit)
+ ####################################################################################################
+ # 005 - WEEKLY-WEEKDAY SALES HEATMAP
+ ####################################################################################################
+ @app.callback(
+     dash.dependencies.Output('sales-weekly-heatmap', 'figure'),
++<<<<<<< HEAD
+     [dash.dependencies.Input('date-picker-sales', 'start_date'),
+      dash.dependencies.Input('date-picker-sales', 'end_date'),
++=======
++	[dash.dependencies.Input('date-picker-sales', 'start_date'),
++	 dash.dependencies.Input('date-picker-sales', 'end_date'),
++>>>>>>> e14922c (Initial commit)
+      dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),
+      dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])
+ def update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):
+@@ -621,8 +1040,13 @@
+     end = dt.strptime(end_date, '%Y-%m-%d')
+ 
+     # Filter based on the dropdowns
++<<<<<<< HEAD
+     isselect_all_l1 = 'Start'  # Initialize isselect_all
+     isselect_all_l2 = 'Start'  # Initialize isselect_all
++=======
++    isselect_all_l1 = 'Start' #Initialize isselect_all
++    isselect_all_l2 = 'Start' #Initialize isselect_all
++>>>>>>> e14922c (Initial commit)
+     ## L1 selection (dropdown value is a list!)
+     for i in reporting_l1_dropdown:
+         if i == 'All':
+@@ -634,8 +1058,12 @@
+             pass
+     # Filter df according to selection
+     if isselect_all_l1 == 'N':
++<<<<<<< HEAD
+         sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),
+                      :].copy()
++=======
++        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown), : ].copy()
++>>>>>>> e14922c (Initial commit)
+     else:
+         sales_df_1 = sales_import.copy()
+     ## L2 selection (dropdown value is a list!)
+@@ -655,54 +1083,99 @@
+     del sales_df_1
+ 
+     # Filter based on the date filters
++<<<<<<< HEAD
+     df1 = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()
++=======
++    df1 = sales_df.loc[(sales_df[sales_fields['date']]>=start) & (sales_df[sales_fields['date']]<=end), :].copy()
++>>>>>>> e14922c (Initial commit)
+     df1['week'] = df1[sales_fields['date']].dt.strftime("%V")
+     df1['weekday'] = df1[sales_fields['date']].dt.weekday
+     del sales_df
+ 
++<<<<<<< HEAD
+     # Aggregate df
+     val_cols = [sales_fields['sales']]
+     df = df1.groupby(['week', 'weekday'])[val_cols].agg('sum')
++=======
++    #Aggregate df
++    val_cols = [sales_fields['sales']]
++    df = df1.groupby(['week','weekday'])[val_cols].agg('sum')
++>>>>>>> e14922c (Initial commit)
+     df.reset_index(inplace=True)
+     del df1
+ 
+     # Build graph
+     hovertemplate_here = (
++<<<<<<< HEAD
+             "<i>Week</i>: %{x}<br>" +
+             "<i>Weekday</i>: %{y}<br>" +
+             "<i>Sales</i>: %{z}" +
+             "<extra></extra>")  # Remove trace info
++    data = go.Heatmap(
++        x=df['weekday'],
++        y=df['week'],
++        z=df[sales_fields['sales']],
++        hovertemplate=hovertemplate_here,
++        hoverongaps=False,
++        colorscale=corporate_colorscale,
++        showscale=False,
++        xgap=1,
++        ygap=1)
++    fig = go.Figure(data=data, layout=corporate_layout)
++    fig.update_layout(
++        title={'text': "Heatmap: Sales by week and weekeday"},
++        xaxis={
++            'title': "Weekday",
++            'tickvals': [0, 1, 2, 3, 4, 5, 6],  # Display x values with different labels
++            'ticktext': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']},
++        yaxis={
++            'title': "Calendar Week",
++            'showgrid': False})
++
++    return fig
++
++
++=======
++    "<i>Week</i>: %{x}<br>"+
++    "<i>Weekday</i>: %{y}<br>"+
++    "<i>Sales</i>: %{z}"+
++    "<extra></extra>") # Remove trace info
+     data = go.Heatmap(
+-        x=df['weekday'],
+-        y=df['week'],
+-        z=df[sales_fields['sales']],
+-        hovertemplate=hovertemplate_here,
+-        hoverongaps=False,
+-        colorscale=corporate_colorscale,
+-        showscale=False,
+-        xgap=1,
+-        ygap=1)
++        x = df['weekday'],
++        y = df['week'],
++        z = df[sales_fields['sales']],
++        hovertemplate = hovertemplate_here,
++        hoverongaps = False,
++        colorscale = corporate_colorscale,
++        showscale = False,
++        xgap = 1,
++        ygap = 1)
+     fig = go.Figure(data=data, layout=corporate_layout)
+     fig.update_layout(
+-        title={'text': "Heatmap: Sales by week and weekeday"},
+-        xaxis={
+-            'title': "Weekday",
+-            'tickvals': [0, 1, 2, 3, 4, 5, 6],  # Display x values with different labels
+-            'ticktext': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']},
+-        yaxis={
+-            'title': "Calendar Week",
+-            'showgrid': False})
++        title={'text' : "Heatmap: Sales by week and weekeday"},
++        xaxis = {
++            'title' : "Weekday",
++            'tickvals' : [0,1,2,3,4,5,6], #Display x values with different labels
++            'ticktext' : ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']},
++        yaxis = {
++            'title' : "Calendar Week",
++            'showgrid' : False})
+ 
+     return fig
+ 
+-
++>>>>>>> e14922c (Initial commit)
+ ####################################################################################################
+ # 006 - SALES BY COUNTRY
+ ####################################################################################################
+ @app.callback(
+     dash.dependencies.Output('sales-count-country', 'figure'),
++<<<<<<< HEAD
+     [dash.dependencies.Input('date-picker-sales', 'start_date'),
+      dash.dependencies.Input('date-picker-sales', 'end_date'),
++=======
++	[dash.dependencies.Input('date-picker-sales', 'start_date'),
++	 dash.dependencies.Input('date-picker-sales', 'end_date'),
++>>>>>>> e14922c (Initial commit)
+      dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),
+      dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])
+ def update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):
+@@ -710,8 +1183,13 @@
+     end = dt.strptime(end_date, '%Y-%m-%d')
+ 
+     # Filter based on the dropdowns
++<<<<<<< HEAD
+     isselect_all_l1 = 'Start'  # Initialize isselect_all
+     isselect_all_l2 = 'Start'  # Initialize isselect_all
++=======
++    isselect_all_l1 = 'Start' #Initialize isselect_all
++    isselect_all_l2 = 'Start' #Initialize isselect_all
++>>>>>>> e14922c (Initial commit)
+     ## L1 selection (dropdown value is a list!)
+     for i in reporting_l1_dropdown:
+         if i == 'All':
+@@ -723,8 +1201,12 @@
+             pass
+     # Filter df according to selection
+     if isselect_all_l1 == 'N':
++<<<<<<< HEAD
+         sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),
+                      :].copy()
++=======
++        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown), : ].copy()
++>>>>>>> e14922c (Initial commit)
+     else:
+         sales_df_1 = sales_import.copy()
+     ## L2 selection (dropdown value is a list!)
+@@ -744,16 +1226,24 @@
+     del sales_df_1
+ 
+     # Filter based on the date filters
++<<<<<<< HEAD
+     df1 = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()
+     del sales_df
+ 
+     # Aggregate df
++=======
++    df1 = sales_df.loc[(sales_df[sales_fields['date']]>=start) & (sales_df[sales_fields['date']]<=end), :].copy()
++    del sales_df
++
++    #Aggregate df
++>>>>>>> e14922c (Initial commit)
+     val_cols = [sales_fields['sales']]
+     df = df1.groupby(sales_fields['reporting_group_l1'])[val_cols].agg('sum')
+     df.reset_index(inplace=True)
+     df.sort_values(sales_fields['reporting_group_l1'], axis=0, ascending=True, inplace=True, na_position='last')
+     del df1
+ 
++<<<<<<< HEAD
+     # Prepare incr % data
+     hover_text = []
+     sale_perc = []
+@@ -766,6 +1256,20 @@
+                            "<i>Sales</i>: {:.2%}" +
+                            "<extra></extra>").format(row[sales_fields['reporting_group_l1']],
+                                                      sale_p))
++=======
++    #Prepare incr % data
++    hover_text=[]
++    sale_perc=[]
++    sale_base=[0]
++    sale_b=0
++    sales_tot = df[sales_fields['sales']].sum()
++    for index, row in df.iterrows():
++        sale_p = row[sales_fields['sales']]/sales_tot
++        hover_text.append(("<i>Country</i>: {}<br>"+
++                            "<i>Sales</i>: {:.2%}"+
++                            "<extra></extra>").format(row[sales_fields['reporting_group_l1']],
++                                                        sale_p))
++>>>>>>> e14922c (Initial commit)
+         sale_b = sale_b + sale_p
+         sale_perc.append(sale_p)
+         sale_base.append(sale_b)
+@@ -775,6 +1279,7 @@
+ 
+     # Build graph
+     data = go.Bar(
++<<<<<<< HEAD
+         x=df[sales_fields['reporting_group_l1']],
+         y=df['sale_p'],
+         base=sale_base,
+@@ -795,13 +1300,39 @@
+     return fig
+ 
+ 
++=======
++        x = df[sales_fields['reporting_group_l1']],
++        y = df['sale_p'],
++        base = sale_base,
++        marker = {'color': corporate_colors['light-green'],
++                'opacity' : 0.75},
++        hovertemplate = df['hovertext'])
++    fig = go.Figure(data=data, layout=corporate_layout)
++    fig.update_layout(
++        title={'text' : "Sales Percentage by Country"},
++        xaxis = {'title' : "Country", 'tickangle' : 0},
++        yaxis = {
++            'title' : "Sales Percentage",
++            'tickformat' : ".0%",
++            'range' : [0, 1]},
++        barmode = 'group',
++        showlegend = False)
++
++    return fig
++
++>>>>>>> e14922c (Initial commit)
+ ####################################################################################################
+ # 007 - SALES BUBBLE CHART
+ ####################################################################################################
+ @app.callback(
+     dash.dependencies.Output('sales-bubble-county', 'figure'),
++<<<<<<< HEAD
+     [dash.dependencies.Input('date-picker-sales', 'start_date'),
+      dash.dependencies.Input('date-picker-sales', 'end_date'),
++=======
++	[dash.dependencies.Input('date-picker-sales', 'start_date'),
++	 dash.dependencies.Input('date-picker-sales', 'end_date'),
++>>>>>>> e14922c (Initial commit)
+      dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),
+      dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])
+ def update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):
+@@ -809,8 +1340,13 @@
+     end = dt.strptime(end_date, '%Y-%m-%d')
+ 
+     # Filter based on the dropdowns
++<<<<<<< HEAD
+     isselect_all_l1 = 'Start'  # Initialize isselect_all
+     isselect_all_l2 = 'Start'  # Initialize isselect_all
++=======
++    isselect_all_l1 = 'Start' #Initialize isselect_all
++    isselect_all_l2 = 'Start' #Initialize isselect_all
++>>>>>>> e14922c (Initial commit)
+     ## L1 selection (dropdown value is a list!)
+     for i in reporting_l1_dropdown:
+         if i == 'All':
+@@ -822,8 +1358,12 @@
+             pass
+     # Filter df according to selection
+     if isselect_all_l1 == 'N':
++<<<<<<< HEAD
+         sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),
+                      :].copy()
++=======
++        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown), : ].copy()
++>>>>>>> e14922c (Initial commit)
+     else:
+         sales_df_1 = sales_import.copy()
+     ## L2 selection (dropdown value is a list!)
+@@ -843,6 +1383,7 @@
+     del sales_df_1
+ 
+     # Filter based on the date filters
++<<<<<<< HEAD
+     df1 = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()
+     del sales_df
+ 
+@@ -873,13 +1414,49 @@
+     countries = len(country_names)
+     colorscale = colorscale_generator(n=countries, starting_col={'r': 57, 'g': 81, 'b': 85},
+                                       finish_col={'r': 251, 'g': 251, 'b': 252})
++=======
++    df1 = sales_df.loc[(sales_df[sales_fields['date']]>=start) & (sales_df[sales_fields['date']]<=end), :].copy()
++    del sales_df
++
++    #Aggregate df
++    val_cols = [sales_fields['sales'], sales_fields['num clients'], sales_fields['revenues']]
++    df = df1.groupby(sales_fields['reporting_group_l1'])[val_cols].agg('sum')
++    df.reset_index(inplace=True)
++    df['rev_per_cl'] = df[sales_fields['revenues']]/df[sales_fields['num clients']]
++    del df1
++
++    # Build graph
++    #Add hover text info on the df
++    hover_text = []
++    for index, row in df.iterrows():
++        hover_text.append(('<i>Country</i>: {}<br>'+
++                          '<i>Sales</i>: {:,d}<br>'+
++                          '<i>Clients</i>: {:,d}<br>'+
++                          '<i>Revenues</i>: {:,d}'+
++                          '<extra></extra>').format(row[sales_fields['reporting_group_l1']],
++                                                row[sales_fields['sales']],
++                                                row[sales_fields['num clients']],
++                                                row[sales_fields['revenues']]))
++    df['hovertext'] = hover_text
++    sizeref = 2.*max(df[sales_fields['sales']])/(100**2)
++
++    #Create bubbles (1 color per country, one trace per city)
++    country_names = sorted(df[sales_fields['reporting_group_l1']].unique())
++    countries = len(country_names)
++    colorscale = colorscale_generator(n=countries, starting_col = {'r' : 57, 'g' : 81, 'b' : 85}, finish_col = {'r' : 251, 'g' : 251, 'b' : 252})
++>>>>>>> e14922c (Initial commit)
+ 
+     fig = go.Figure(layout=corporate_layout)
+     i = 0
+     for co in country_names:
+         color = colorscale[i]
++<<<<<<< HEAD
+         i = i + 1
+         df_i = df.loc[df[sales_fields['reporting_group_l1']] == co, :].copy()
++=======
++        i = i+1
++        df_i = df.loc[df[sales_fields['reporting_group_l1']]==co, :].copy()
++>>>>>>> e14922c (Initial commit)
+         fig.add_trace(
+             go.Scatter(
+                 x=df_i['rev_per_cl'],
+@@ -887,32 +1464,58 @@
+                 name=co,
+                 hovertemplate=df_i['hovertext'],
+                 marker_size=df_i[sales_fields['sales']],
++<<<<<<< HEAD
+                 marker={
+                     'color': color,
+                     'line_width': 1,
+                     'line': {'color': corporate_colors['light-grey']}
++                })
++        )
++
++    fig.update_traces(mode='markers', marker={'sizemode': 'area', 'sizeref': sizeref})
++    corporate_margins_here = corporate_margins
++    corporate_margins_here['t'] = 65
++    fig.update_layout(
++        title={'text': "Revenue per Client by Country"},
++        xaxis={'title': "Revenue per Client", 'tickangle': 0},
++        yaxis={'title': "Sales (Units)"},
++        margin=corporate_margins_here)
++
++    return fig
++
++
++=======
++                marker = {
++                    'color' : color,
++                    'line_width' : 1,
++                    'line' : {'color' : corporate_colors['light-grey']}
+                 })
+-        )
++            )
+ 
+-    fig.update_traces(mode='markers', marker={'sizemode': 'area', 'sizeref': sizeref})
++    fig.update_traces(mode='markers', marker= {'sizemode' : 'area', 'sizeref' : sizeref})
+     corporate_margins_here = corporate_margins
+     corporate_margins_here['t'] = 65
+     fig.update_layout(
+-        title={'text': "Revenue per Client by Country"},
+-        xaxis={'title': "Revenue per Client", 'tickangle': 0},
+-        yaxis={'title': "Sales (Units)"},
+-        margin=corporate_margins_here)
++        title={'text' : "Revenue per Client by Country"},
++        xaxis = {'title' : "Revenue per Client", 'tickangle' : 0},
++        yaxis = {'title' : "Sales (Units)"},
++        margin = corporate_margins_here)
+ 
+     return fig
+ 
+-
++>>>>>>> e14922c (Initial commit)
+ ####################################################################################################
+ # 008 - SALES BY COUNTRY & CITY
+ ####################################################################################################
+ @app.callback(
+     dash.dependencies.Output('sales-count-city', 'figure'),
++<<<<<<< HEAD
+     [dash.dependencies.Input('date-picker-sales', 'start_date'),
+      dash.dependencies.Input('date-picker-sales', 'end_date'),
++=======
++	[dash.dependencies.Input('date-picker-sales', 'start_date'),
++	 dash.dependencies.Input('date-picker-sales', 'end_date'),
++>>>>>>> e14922c (Initial commit)
+      dash.dependencies.Input('reporting-groups-l1dropdown-sales', 'value'),
+      dash.dependencies.Input('reporting-groups-l2dropdown-sales', 'value')])
+ def update_chart(start_date, end_date, reporting_l1_dropdown, reporting_l2_dropdown):
+@@ -920,8 +1523,13 @@
+     end = dt.strptime(end_date, '%Y-%m-%d')
+ 
+     # Filter based on the dropdowns
++<<<<<<< HEAD
+     isselect_all_l1 = 'Start'  # Initialize isselect_all
+     isselect_all_l2 = 'Start'  # Initialize isselect_all
++=======
++    isselect_all_l1 = 'Start' #Initialize isselect_all
++    isselect_all_l2 = 'Start' #Initialize isselect_all
++>>>>>>> e14922c (Initial commit)
+     ## L1 selection (dropdown value is a list!)
+     for i in reporting_l1_dropdown:
+         if i == 'All':
+@@ -933,8 +1541,12 @@
+             pass
+     # Filter df according to selection
+     if isselect_all_l1 == 'N':
++<<<<<<< HEAD
+         sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown),
+                      :].copy()
++=======
++        sales_df_1 = sales_import.loc[sales_import[sales_fields['reporting_group_l1']].isin(reporting_l1_dropdown), : ].copy()
++>>>>>>> e14922c (Initial commit)
+     else:
+         sales_df_1 = sales_import.copy()
+     ## L2 selection (dropdown value is a list!)
+@@ -954,24 +1566,45 @@
+     del sales_df_1
+ 
+     # Filter based on the date filters
++<<<<<<< HEAD
+     df1 = sales_df.loc[(sales_df[sales_fields['date']] >= start) & (sales_df[sales_fields['date']] <= end), :].copy()
++    del sales_df
++
++    # Aggregate df
++    val_cols = [sales_fields['sales'], sales_fields['sales target']]
++    df = df1.groupby([sales_fields['reporting_group_l1'], sales_fields['reporting_group_l2']])[val_cols].agg('sum')
++    df.reset_index(inplace=True)
++    # Include hover data
++    hover_text = []
++    for index, row in df.iterrows():
++        hover_text.append(("<i>Country</i>: {}<br>" +
++                           "<i>City</i>: {}<br>" +
++                           "<i>Sales</i>: {:,d}<br>" +
++                           "<i>Targets</i>: {:,d}" +
++                           "<extra></extra>").format(row[sales_fields['reporting_group_l1']],
++                                                     row[sales_fields['reporting_group_l2']],
++                                                     row[sales_fields['sales']],
++                                                     row[sales_fields['sales target']]))
++=======
++    df1 = sales_df.loc[(sales_df[sales_fields['date']]>=start) & (sales_df[sales_fields['date']]<=end), :].copy()
+     del sales_df
+ 
+     # Aggregate df
+-    val_cols = [sales_fields['sales'], sales_fields['sales target']]
+-    df = df1.groupby([sales_fields['reporting_group_l1'], sales_fields['reporting_group_l2']])[val_cols].agg('sum')
++    val_cols = [sales_fields['sales'],sales_fields['sales target']]
++    df = df1.groupby([sales_fields['reporting_group_l1'],sales_fields['reporting_group_l2']])[val_cols].agg('sum')
+     df.reset_index(inplace=True)
+     # Include hover data
+-    hover_text = []
++    hover_text=[]
+     for index, row in df.iterrows():
+-        hover_text.append(("<i>Country</i>: {}<br>" +
+-                           "<i>City</i>: {}<br>" +
+-                           "<i>Sales</i>: {:,d}<br>" +
+-                           "<i>Targets</i>: {:,d}" +
+-                           "<extra></extra>").format(row[sales_fields['reporting_group_l1']],
+-                                                     row[sales_fields['reporting_group_l2']],
+-                                                     row[sales_fields['sales']],
+-                                                     row[sales_fields['sales target']]))
++        hover_text.append(("<i>Country</i>: {}<br>"+
++                            "<i>City</i>: {}<br>"+
++                            "<i>Sales</i>: {:,d}<br>"+
++                            "<i>Targets</i>: {:,d}"+
++                            "<extra></extra>").format(row[sales_fields['reporting_group_l1']],
++                                                        row[sales_fields['reporting_group_l2']],
++                                                        row[sales_fields['sales']],
++                                                        row[sales_fields['sales target']]))
++>>>>>>> e14922c (Initial commit)
+     df['hovertext'] = hover_text
+     df['l1l2'] = df[sales_fields['reporting_group_l1']] + "_" + df[sales_fields['reporting_group_l2']]
+     # Generate colors
+@@ -979,6 +1612,7 @@
+     colorscale = colorscale_generator(n=ncolors)
+ 
+     # Build graph
++<<<<<<< HEAD
+     data = []
+     i = 0
+     for l in sorted(df['l1l2']):
+@@ -996,13 +1630,39 @@
+             }
+         )
+         i = i + 1
++=======
++    data=[]
++    i = 0
++    for l in sorted(df['l1l2']):
++        df_l = df.loc[(df['l1l2']==l), :].copy()
++        trace= go.Bar(
++            name = l,
++            x = df_l[sales_fields['reporting_group_l1']],
++            y = df_l[sales_fields['sales']],
++            hovertemplate = df_l['hovertext'],
++            marker = {
++                'color' : colorscale[i],
++                'opacity' : 0.85,
++                'line_width' : 1,
++                'line' : {'color' : colorscale[i]}
++                }
++            )
++        i=i+1
++>>>>>>> e14922c (Initial commit)
+         data.append(trace)
+     fig = go.Figure(data=data, layout=corporate_layout)
+     fig.update_layout(
+         barmode='stack',
++<<<<<<< HEAD
+         title={'text': "Sales by Country & City"},
+         xaxis={'title': "Country", 'tickangle': 0},
+         yaxis={'title': "Sales (Units)"},
+         showlegend=False)
++=======
++        title={'text' : "Sales by Country & City"},
++        xaxis = {'title' : "Country", 'tickangle' : 0},
++        yaxis = {'title' : "Sales (Units)"},
++        showlegend = False)
++>>>>>>> e14922c (Initial commit)
+ 
+     return fig
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"ProjectRootManager\" version=\"2\" project-jdk-name=\"Python 3.9\" project-jdk-type=\"Python SDK\" />\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision 63a6ba4c97247572c60592e1ee715d37a652a246)
++++ b/.idea/misc.xml	(date 1638875459261)
+@@ -1,4 +1,8 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
++<<<<<<< HEAD
+   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9" project-jdk-type="Python SDK" />
++=======
++  <component name="ProjectRootManager" version="2" project-jdk-name="Pipenv (MachineLearningEndtoEndFramework)" project-jdk-type="Python SDK" />
++>>>>>>> e14922c (Initial commit)
+ </project>
+\ No newline at end of file
+Index: Pipfile
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Pipfile b/Pipfile
+new file mode 100644
+--- /dev/null	(date 1638875459223)
++++ b/Pipfile	(date 1638875459223)
+@@ -0,0 +1,11 @@
++[[source]]
++url = "https://pypi.org/simple"
++verify_ssl = true
++name = "pypi"
++
++[packages]
++
++[dev-packages]
++
++[requires]
++python_version = "3.9"
